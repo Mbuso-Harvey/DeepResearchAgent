@@ -3,11 +3,10 @@
 Used only by test_failure_modes.py to prove the harness's exit codes without network or keys.
 One HTTP server, three roles:
   /api/v1/chat/completions   scripted agent model; behaviour picked by a MODE=<name> marker in the task
-  /judge/chat/completions    scripted judge (JUDGE_MODE env: ok | garbage)
+  /judge/chat/completions    scripted judge; unparseable verdict when the question contains JUDGE=garbage
   /retriever/{health,search,get_document}   canned corpus; a query containing FAIL returns HTTP 500
 """
 import json
-import os
 import re
 import sys
 import threading
@@ -87,7 +86,7 @@ class H(BaseHTTPRequestHandler):
         if self.path == "/retriever/get_document":
             return self.send(200, {"document": {"docid": req["docid"], "text": "The answer is 42."}})
         if self.path == "/judge/chat/completions":
-            if os.environ.get("JUDGE_MODE") == "garbage":
+            if "JUDGE=garbage" in json.dumps(req.get("messages", [])):
                 return self.send(200, self.completion("I cannot decide.", req["model"]))
             return self.send(200, self.completion("extracted_final_answer: 42\nreasoning: match\ncorrect: yes\nconfidence: 90", req["model"]))
         if self.path.endswith("/chat/completions"):

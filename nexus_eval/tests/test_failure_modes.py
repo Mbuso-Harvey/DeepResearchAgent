@@ -42,6 +42,7 @@ def main():
     modes = ["answer", "never_done", "empty_answer", "tool_error", "fallback", "answer2", "answer3"]
     rows = [{"query_id": f"t-{m}", "query": f"What is the number? MODE={m.rstrip('23') if m.startswith('answer') else m}#{m}",
              "answer": "42"} for m in modes]
+    rows[modes.index("answer3")]["query"] += " JUDGE=garbage"
     data = tmp / "data.jsonl"
     data.write_text("".join(json.dumps(r) + "\n" for r in rows))
     src_sha = hashlib.sha256(data.read_bytes()).hexdigest()
@@ -76,7 +77,7 @@ def main():
          {"t-answer": "completed", "t-never_done": "max_steps", "t-empty_answer": "no_answer",
           "t-tool_error": "tool_error", "t-fallback": "agent_step_error"}),
         ("task timeout", subset("timeout", ["t-answer2"]), {}, ["--task-timeout", "5"], 3, {"t-answer2": "timeout"}),
-        ("judge unparseable", subset("judge", ["t-answer3"]), {"JUDGE_MODE": "garbage"}, [], 4, {"t-answer3": "completed"}),
+        ("judge unparseable", subset("judge", ["t-answer3"]), {}, [], 4, {"t-answer3": "completed"}),
         ("all good", subset("good", ["t-answer"]), {}, [], 0, {"t-answer": "completed"}),
     ]
     report, ok_all = [], True
