@@ -1,0 +1,66 @@
+{
+  "_comment": "Frozen configuration for the Nexus Research v0 baseline. Changing any value makes a new baseline, not a rerun.",
+  "agent": {
+    "repo": "https://github.com/Mbuso-Harvey/DeepResearchAgent",
+    "branch": "nexus-research-v0",
+    "commit": "5e3c95d14266f8c4aa6a5deae1fe165c7cd1b87b",
+    "config": "configs/tool_calling_agent.py",
+    "agent_name": "tool_calling",
+    "model": "openrouter/gemini-3-flash-preview",
+    "provider_model_id": "google/gemini-3-flash-preview",
+    "inference_settings": {
+      "_source": "inherited unchanged: src/model/manager.py (openrouter/gemini-3-flash-preview entry), configs/agents/tool_calling.py, configs/tool_calling_agent.py",
+      "temperature": 0.7,
+      "max_completion_tokens": 16384,
+      "reasoning": {
+        "enabled": true
+      },
+      "seed": null,
+      "structured_output": "ThinkOutput response_format each step",
+      "inherited_fallback_model": "openrouter/gemini-2.5-flash (google/gemini-2.5-flash), configured but effectively unreachable for chat errors: src/model/openrouter/chat.py returns a failed response instead of raising, so src/model/manager.py never falls back. The harness fails any task that logs a fallback or a usage line for a model other than the pin.",
+      "memory_system_model": "same model (general_memory_system, use_memory=True)",
+      "max_steps": 50,
+      "review_steps": 5,
+      "max_tools": 10
+    },
+    "inherited_tools": [
+      "bash",
+      "python_interpreter",
+      "done",
+      "todo",
+      "skill_generator",
+      "ai_capability_debate"
+    ],
+    "added_tools": [
+      "search",
+      "get_document"
+    ],
+    "binance_db_standin_tree_sha256": "d0653d1360529cd584059423212d65b1e0e403a15e9c1dd5df0686f9414e76ed"
+  },
+  "benchmark": {
+    "name": "BrowseComp-Plus",
+    "repo": "https://github.com/texttron/BrowseComp-Plus",
+    "commit": "046949032b0328319cc9a02663a759ec601d9402",
+    "queries_dataset": "Tevatron/browsecomp-plus",
+    "corpus_dataset": "Tevatron/browsecomp-plus-corpus",
+    "index": "Tevatron/browsecomp-plus-indexes bm25/",
+    "task_prompt": "search_agent/prompts.py QUERY_TEMPLATE (with get_document), verbatim",
+    "retriever": {
+      "type": "bm25",
+      "k": 5,
+      "snippet_max_tokens": 512,
+      "snippet_tokenizer": "Qwen/Qwen3-0.6B"
+    }
+  },
+  "judge": {
+    "model": "openai/gpt-4.1",
+    "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    "temperature": 0,
+    "prompt": "search_agent/prompts.py GRADER_TEMPLATE, verbatim; parsed with scripts_evaluation/evaluate_with_openai.py parse_judge_response",
+    "note": "Official primary judge is Qwen3-32B (needs GPUs); BrowseComp-Plus reports GPT-4.1 within 1% of it."
+  },
+  "scoring": {
+    "accuracy": "judged correct / number of selected tasks; every task whose status is not 'completed' counts as incorrect",
+    "consistency_rule": "two runs are materially consistent when their correct counts differ by at most max(1, ceil(0.10 * n)) and both have the same number of non-completed tasks or fewer than 10% each"
+  }
+}
